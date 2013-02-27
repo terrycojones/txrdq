@@ -1,0 +1,21 @@
+Installation
+------------
+
+To install, use
+
+  $ pip install txrdq
+
+or if you're not a fan of pip:
+
+  $ python setup.py install  # You may need sudo.
+
+If you want to install in a virtualenv:
+
+  $ virtualenv --no-site-packages env
+  $ . env/bin/activate
+  $ pip install -r requirements.txt
+
+Running the tests
+-----------------
+
+  $ trial txrdq

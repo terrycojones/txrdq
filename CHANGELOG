@@ -1,0 +1,114 @@
+Version 0.2.13 notes (July 13, 2011)
+----------------------------------
+
+Make sure ResizableDispatchQueue._launchJob always returns a Deferred.  I'm
+not sure how, but sometimes when there is no waiting Deferred on the job,
+it's not ok to return None. Either the job has already finished (it may be
+synchronous), or a watiting Deferred has somehow yet to be created (seems
+impossible since we make one on a put), or the waiting Deferreds have fired
+and the job's list of waiting Deferred is now empty. Long-running jobs were
+somehow triggering this (see testPuttingMoreThanWidthOnlyDispatchesWidth in
+test/test_rdq.py) and were not being waited for by the cooperator.
+
+Version 0.2.12 notes (July 12, 2011)
+----------------------------------
+
+Don't use next() in txrdq/dpq.py as it's new in Python 2.6 and I'd like to
+be compatible with earlier versions.
+
+Version 0.2.11 notes (July 11, 2011)
+----------------------------------
+
+Updated .bzrignore.
+
+Version 0.2.10 notes (July 11, 2011)
+----------------------------------
+
+Fixed a bug wherein an initially non-zero queue would have Deferreds
+waiting for a job arg and would start job processing on the next put even
+if the width of the queue had been set to zero in the meantime.  I.e.,
+create a queue of size 3 and shortly afterwards there will be 3 calls to
+next() that will each get a Deferred awaiting a job arg. Then set the queue
+width to zero. Then do a put() and the job arg is given to one of the
+waiting Deferreds and is then incorrectly dispatched (the width is zero).
+
+This bug showed that what goes on can be surprising, and I had to scratch
+my head to fix it.  That's a sure sign this code has gotten too complex.
+The logic of setWidth is hard to follow.
+
+Version 0.2.9 notes (July 9, 2011)
+----------------------------------
+
+Added a test.
+
+Version 0.2.8 notes (July 9, 2011)
+----------------------------------
+
+Use single quotes on strings in setup.py.
+
+Version 0.2.7 notes (July 9, 2011)
+----------------------------------
+
+Added LICENSE file, and Apache boilerplate to *.py files. Added useless
+assignment in setup.py to keep pyflakes quiet.
+
+Version 0.2.6 notes (July 6, 2011)
+----------------------------------
+
+txrdq.rdq.ResizableDispatchQueue.underway was returning a set of job
+arguments instead of a set of txrdq.job.Job instances. This has been
+corrected.
+
+txrdq.rdq.ResizableDispatchQueue.reprioritize was changing the priority in
+the priority queue but not adjusting it in the job object. Fixed.
+
+Version 0.2 notes (June 27, 2011)
+---------------------------------
+
+This version is not backwards compatible with 0.1. Changed are:
+
+  - ResizableDispatchQueue.pending() now returns a list of txrdq.job.Job
+    instances (instead of a list of job arguments). This gives much more
+    detail on what's pending. If you want the old behavior, do this:
+
+      pending = [j.jobarg for j in rdq.pending()]
+
+  - Similarly, ResizableDispatchQueue.underway() also returns a list of Job
+    instances.
+
+  - When you call clearQueue(), pening job deferreds (returned by put())
+    will have cancel called on them. To prevent this, call clearQueue with
+    cancelPending=False.
+
+New:
+
+  - put() returns a deferred. The deferred will fire with an instance of
+    txrdq.job.Job that will contain details of the completed job. If the
+    job encounters an error or if cancel is called on it, it will errback
+    with a Job instance.
+
+  - put() can now take an optional priority argument (default is zero). Low
+    priorities values are more important.
+
+  - A Job instance that is returned by pending() or underway() can be
+    cancelled.
+
+  - A Job instance that is returned by pending() or underway() can be
+    watched, via job.watch(). This provides a deferred that will fire in
+    the same way that the one returned by put() will.
+
+  - A Job instance can be reprioritized, via job.reprioritize(priority)
+
+  - When you call stop() it will normally wait until all underway jobs
+    complete. To instead cancel them immediately, pass cancelUnderway=True
+    to stop(). Underway jobs cancelled in this way, will be returned in the
+    list of jobs returned by stop().
+
+  - There is a standalone class DeferredPriorityQueue in txrdq/dpq.py that
+    might be of independent interest.
+
+  - There is a standalone class DeferredPool in txrdq/pool.py that might be
+    of independent interest.
+
+  - Lots of tests and docstrings added. More of both are needed. pydoc
+    txrdq.rdq will give you something reasonable.
