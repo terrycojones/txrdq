@@ -113,9 +113,13 @@ class TestPool(unittest.TestCase):
             self.assertIdentical(fail.value, expectedValue)
             return 5
         pool = DeferredPool()
-        d = Deferred().addErrback(error)
+        d = Deferred()
         pool.add(d)
         pool.notifyWhenEmpty()
+        # Note that we add the errback handler AFTER the deferred has been
+        # added to the pool. We want to make sure the pool does not interfere
+        # with the error result.
+        d.addErrback(error)
         d.errback(expectedValue)
         self.assertIdentical(d.result, 5)
 
