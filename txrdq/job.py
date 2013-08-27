@@ -1,4 +1,4 @@
-# Copyright 2011 Fluidinfo Inc.
+# Copyright 2011-2013 Fluidinfo Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License"); you
 # may not use this file except in compliance with the License.  You
@@ -126,7 +126,6 @@ class Job(object):
         waiting watchers.  If the job was cancelled, its completion details
         have already been set (by self.cancel, below).
         """
-        print 'failed in job', failure
         if self.state != self.CANCELLED:
             assert self.state == self.UNDERWAY
             self.stopTime = time.time()
@@ -177,5 +176,4 @@ class Job(object):
         elif self.state == self.FINISHED:
             return defer.succeed(self)
         else:
-            print 'returning a failuer', self.state
             return defer.fail(self)

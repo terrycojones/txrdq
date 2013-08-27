@@ -25,11 +25,10 @@ d = dict(name='txRDQ',
              'License :: OSI Approved :: Apache Software License',
              'Operating System :: OS Independent',
              'Topic :: Software Development :: Libraries :: Python Modules',
-             ],
+         ],
          description=('A Twisted class for queueing and dispatching jobs in '
                       'a controlled manner.'),
-         long_description=read('README'),
-         )
+         long_description=read('README'))
 
 try:
     from setuptools import setup

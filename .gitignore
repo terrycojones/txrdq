@@ -1,3 +1,5 @@
 _trial_temp
 txRDQ.egg-info
 dist
+*.pyc
+*~

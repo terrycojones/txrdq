@@ -1,8 +1,8 @@
-txRDQ (Resizable Dispatch Queue) provides a Twisted class for a controllable
-priority queue for running jobs. You can obtain the contents of the queue and
-the dispatched pool while running.  Jobs can be canceled or reprioritized.  The
-size of the underway job pool can be changed dynamically.  Job dispatch can be
-paused and resumed. The queue can be stopped gracefully, returning jobs that
-had not yet been dispatched.
+txRDQ (Resizable Dispatch Queue) provides a Twisted class for a
+controllable priority queue for running jobs. You can obtain the contents
+of the queue and the dispatched pool while running.  Jobs can be canceled
+or reprioritized.  The size of the underway job pool can be changed
+dynamically.  Job dispatch can be paused and resumed. The queue can be
+stopped gracefully, returning jobs that had not yet been dispatched.
 
 See http://blogs.fluidinfo.com/terry/2011/06/27/a-resizable-dispatch-queue-for-twisted/ for some more detail.

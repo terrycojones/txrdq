@@ -1,4 +1,4 @@
-# Copyright 2011 Fluidinfo Inc.
+# Copyright 2011-2013 Fluidinfo Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License"); you
 # may not use this file except in compliance with the License.  You
@@ -651,4 +651,4 @@ class TestTiming(unittest.TestCase):
         for value in range(5):
             reactor.callLater(0.01, dq.put, value)
         yield task.deferLater(reactor, 0.1, self._testSize, dq, (3, 2))
-        remaining = yield dq.stop()
+        yield dq.stop()

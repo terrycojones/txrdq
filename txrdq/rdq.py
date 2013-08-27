@@ -1,4 +1,4 @@
-# Copyright 2010, 2011 Fluidinfo Inc.
+# Copyright 2010-2013 Fluidinfo Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License"); you
 # may not use this file except in compliance with the License.  You
@@ -77,10 +77,7 @@ class ResizableDispatchQueue(object):
             raise QueueStopped()
         else:
             job = Job(jobarg, priority)
-            print 'made job. state is ', job.state
             d = job.watch().addBoth(self._jobDone, job)
-            print 'called watch'
-            print 'made job. state is ', job.state
             self._queue.put(job, priority)
             return d
 
@@ -104,7 +101,6 @@ class ResizableDispatchQueue(object):
             self._queue.delete(job)
         except KeyError:
             self._underway.discard(job)
-        print 'In _jobDone, result is ', result, 'job is', job.state
         return result
 
     def pending(self):
@@ -268,7 +264,6 @@ class ResizableDispatchQueue(object):
         @return: Unless the job is a no-op, return a C{Deferred} that will fire
         with the result of processing the job. Otherwise, return C{None}.
         """
-        print 'launching'
         if job is not self._NOOP:
             self._underway.add(job)
             job.launch(self._func)
@@ -278,7 +273,6 @@ class ResizableDispatchQueue(object):
             try:
                 return job.waiting[0]
             except IndexError:
-                print 'nothing was waitind'
                 return job.watch()
 
     def getWidth(self):

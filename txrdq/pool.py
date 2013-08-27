@@ -1,4 +1,4 @@
-# Copyright 2010, 2011 Fluidinfo Inc.
+# Copyright 2010-2013 Fluidinfo Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License"); you
 # may not use this file except in compliance with the License.  You
@@ -58,3 +58,11 @@ class DeferredPool(object):
             d = defer.Deferred()
             self._waiting.append(d)
             return d
+
+    def status(self):
+        """
+        Return a tuple containing the number of deferreds that are
+        outstanding and the number of deferreds that are waiting for the
+        pool to empty.
+        """
+        return len(self._pool), len(self._waiting)
