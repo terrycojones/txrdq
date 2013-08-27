@@ -89,15 +89,46 @@ class TestPool(unittest.TestCase):
         d.errback(Exception())
         self.assertEqual(pool.status(), (1, 0))
 
+    def testCallbackedDeferredFiresWithTheRightResult(self):
+        """
+        The pool must correctly pass the original deferred callback result
+        through any callbacks it might have added.
+        """
+        pool = DeferredPool()
+        d = Deferred()
+        pool.add(d)
+        pool.notifyWhenEmpty()
+        expectedValue = object()
+        d.callback(expectedValue)
+        self.assertIdentical(d.result, expectedValue)
+
+    def testErrbackedDeferredFiresWithTheRightResult(self):
+        """
+        The pool must correctly pass the original deferred errback result
+        through any callbacks it might have added.
+        """
+        expectedValue = Exception()
+
+        def error(fail):
+            self.assertIdentical(fail.value, expectedValue)
+            return 5
+        pool = DeferredPool()
+        d = Deferred().addErrback(error)
+        pool.add(d)
+        pool.notifyWhenEmpty()
+        d.errback(expectedValue)
+        self.assertIdentical(d.result, 5)
+
     def testEmptyPoolWithTestImmediatelyTrue(self):
         """
         If the pool is empty and C{testImmediately} is C{True} when
-        calling L{notifyWhenEmpty}, an already fired deferred must be
-        returned and the pool should be empty.
+        calling L{notifyWhenEmpty}, an already fired (with C{None} result)
+        deferred must be returned and the pool should be empty.
         """
         pool = DeferredPool()
         d = pool.notifyWhenEmpty(testImmediately=True)
         self.assertEqual(d.called, True)
+        self.assertEqual(d.result, None)
         self.assertEqual(pool.status(), (0, 0))
 
     def testEmptyPoolWithTestImmediatelyFalse(self):
@@ -153,21 +184,23 @@ class TestPool(unittest.TestCase):
         pool.add(d1)
         pool.add(d2)
         pool.add(d3)
-        # There should be 3 deferreds underway.
+        # There must be 3 deferreds underway.
         self.assertEqual(pool.status(), (3, 0))
         wait1 = pool.notifyWhenEmpty()
         wait2 = pool.notifyWhenEmpty()
-        # There should be 3 deferreds underway and 2 waiting.
+        # There must be 3 deferreds underway and 2 waiting.
         self.assertEqual(pool.status(), (3, 2))
         d1.callback(None)
         d2.callback(None)
-        # There should be 1 deferreds underway and 2 waiting.
+        # There must be 1 deferreds underway and 2 waiting.
         self.assertEqual(pool.status(), (1, 2))
-        # The waiters should not have fired yet.
+        # The waiters must not have fired yet.
         self.assertEqual(wait1.called, False)
         self.assertEqual(wait2.called, False)
         d3.callback(None)
-        # Both waiters should have fired and the pool should be empty.
+        # Both waiters must have fired (with None) & the pool must be empty.
         self.assertEqual(wait1.called, True)
         self.assertEqual(wait2.called, True)
         self.assertEqual(pool.status(), (0, 0))
+        self.assertEqual(wait1.result, None)
+        self.assertEqual(wait2.result, None)
