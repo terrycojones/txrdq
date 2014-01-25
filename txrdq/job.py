@@ -14,6 +14,7 @@
 
 import time
 from twisted.internet import defer
+from twisted.python import log
 
 
 class Job(object):
@@ -80,7 +81,7 @@ class Job(object):
         self.startTime = None
         self.stopTime = None
         self.state = self.PENDING
-        self.waiting = []  # Deferreds waiting on the result of this job.
+        self._waiting = []  # Deferreds waiting on the result of this job.
 
     def launch(self, func):
         """
@@ -105,6 +106,9 @@ class Job(object):
             self.state = self.UNDERWAY
             self._underwayDeferred = defer.maybeDeferred(func, self.jobarg)
             self._underwayDeferred.addCallbacks(self._finished, self._failed)
+            # We should never get an error here. If we do, it's due to our
+            # callback code (which should of course be error-free!).
+            self._underwayDeferred.addErrback(log.err)
 
     def _finished(self, result):
         """
@@ -115,9 +119,9 @@ class Job(object):
         self.stopTime = time.time()
         self.state = self.FINISHED
         self.result = result
-        for d in self.waiting:
+        for d in self._waiting:
             d.callback(self)
-        self.waiting = []
+        self._waiting = []
 
     def _failed(self, failure):
         """
@@ -131,9 +135,9 @@ class Job(object):
             self.stopTime = time.time()
             self.state = self.FAILED
             self.failure = failure
-            for d in self.waiting:
+            for d in self._waiting:
                 d.errback(self)
-            self.waiting = []
+            self._waiting = []
 
     def cancel(self):
         """
@@ -148,9 +152,9 @@ class Job(object):
             self.state = self.CANCELLED
             self._underwayDeferred.cancel()
         self.state = self.CANCELLED
-        for d in self.waiting:
+        for d in self._waiting:
             d.errback(self)
-        self.waiting = []
+        self._waiting = []
 
     def _cancelWatcher(self, ignoredDeferred):
         """
@@ -171,7 +175,7 @@ class Job(object):
         """
         if self.state in (self.PENDING, self.UNDERWAY):
             d = defer.Deferred(self._cancelWatcher)
-            self.waiting.append(d)
+            self._waiting.append(d)
             return d
         elif self.state == self.FINISHED:
             return defer.succeed(self)

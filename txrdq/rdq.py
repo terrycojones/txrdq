@@ -261,19 +261,20 @@ class ResizableDispatchQueue(object):
         @param job: a L{Job} to get underway.  If the job is a no-op, do
         nothing.
 
-        @return: Unless the job is a no-op, return a C{Deferred} that will fire
-        with the result of processing the job. Otherwise, return C{None}.
+        @return: If the job is a no-op, return C{None}. Else return a
+        C{Deferred} that will fire when the job has completed.
         """
         if job is not self._NOOP:
             self._underway.add(job)
             job.launch(self._func)
-            # Return the first waiting Deferred for the job, if any.
-            # Otherwise return a new Deferred for the job. Our self._coop
-            # (a task.Cooperator) will wait for the Deferred result.
-            try:
-                return job.waiting[0]
-            except IndexError:
-                return job.watch()
+            # We don't care about the result of the job here, we just want
+            # to return a deferred that fires when the job is done. Ignore
+            # any failure in the deferred returned by C{job.watch} so as
+            # not to trigger error messages elsewhere (e.g., from trial)
+            # about unhandled errors. (The processing of the job result is
+            # handled in C{self._jobDone}, which is called by the deferred
+            # returned by C{self.put}.)
+            return job.watch().addErrback(lambda err: None)
 
     def getWidth(self):
         """
