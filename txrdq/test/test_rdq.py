@@ -661,7 +661,6 @@ class TestDeferredErrorHandling(unittest.TestCase):
     http://stackoverflow.com/questions/9728781/\
     testing-a-failing-job-in-resizabledispatchqueue-with-trial
     """
-
     def testRaiseFailsWithJob(self):
         """
         Raising an exception in the job handler should result in a failure
