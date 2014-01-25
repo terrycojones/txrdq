@@ -9,7 +9,7 @@ def read(fname):
     return open(os.path.join(os.path.dirname(__file__), fname)).read()
 
 d = dict(name='txRDQ',
-         version='0.2.13',
+         version='0.2.14',
          provides=['txrdq'],
          maintainer='Fluidinfo Inc.',
          maintainer_email='info@fluidinfo.com',

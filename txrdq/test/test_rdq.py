@@ -652,3 +652,43 @@ class TestTiming(unittest.TestCase):
             reactor.callLater(0.01, dq.put, value)
         yield task.deferLater(reactor, 0.1, self._testSize, dq, (3, 2))
         yield dq.stop()
+
+
+class TestDeferredErrorHandling(unittest.TestCase):
+    """
+    Check that errors raised when processing a job are handled correctly. These
+    tests were added in response to the problem desribed at
+    http://stackoverflow.com/questions/9728781/\
+    testing-a-failing-job-in-resizabledispatchqueue-with-trial
+    """
+
+    def testRaiseFailsWithJob(self):
+        """
+        Raising an exception in the job handler should result in a failure
+        that contains a L{txrdq.job.Job} value.
+        """
+
+        def raiseException(jobarg):
+            raise Exception()
+
+        dq = ResizableDispatchQueue(raiseException, 1)
+        d = dq.put('Some argument', 1)
+        return self.assertFailure(d, Job)
+
+    @defer.inlineCallbacks
+    def testRaiseFailsWithCorrectJobArgument(self):
+        """
+        Raising an exception in the job handler should result in a failure
+        that contains a job with the original job argument.
+        """
+        result = []
+
+        def raiseException(jobarg):
+            raise Exception()
+
+        def extractJobarg(failure):
+            result.append(failure.value.jobarg)
+
+        dq = ResizableDispatchQueue(raiseException, 1)
+        yield dq.put('Some argument', 1).addErrback(extractJobarg)
+        self.assertEqual(['Some argument'], result)
