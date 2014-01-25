@@ -1,5 +1,17 @@
+Version 0.2.14 notes (January 25, 2014)
+---------------------------------------
+
+There was a problem when running trial tests with a job handler that raised an
+error. This was due to calling job.watch and not ignoring the error it received.
+The original problem was reported at http://stackoverflow.com/questions/9728781/testing-a-failing-job-in-resizabledispatchqueue-with-trial
+(See also the comment below for version 0.2.13, which almost certainly introduced
+this bug due to an incorrect fix.)
+
+Thanks to L. Daniel Burr (@ldanielburr) who also ran across this, found the
+problem, and fixed it.
+
 Version 0.2.13 notes (July 13, 2011)
-----------------------------------
+------------------------------------
 
 Make sure ResizableDispatchQueue._launchJob always returns a Deferred.  I'm
 not sure how, but sometimes when there is no waiting Deferred on the job,
@@ -11,18 +23,18 @@ somehow triggering this (see testPuttingMoreThanWidthOnlyDispatchesWidth in
 test/test_rdq.py) and were not being waited for by the cooperator.
 
 Version 0.2.12 notes (July 12, 2011)
-----------------------------------
+------------------------------------
 
 Don't use next() in txrdq/dpq.py as it's new in Python 2.6 and I'd like to
 be compatible with earlier versions.
 
 Version 0.2.11 notes (July 11, 2011)
-----------------------------------
+------------------------------------
 
 Updated .bzrignore.
 
 Version 0.2.10 notes (July 11, 2011)
-----------------------------------
+------------------------------------
 
 Fixed a bug wherein an initially non-zero queue would have Deferreds
 waiting for a job arg and would start job processing on the next put even
